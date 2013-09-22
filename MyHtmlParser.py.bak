@@ -1,0 +1,178 @@
+'''
+Created on Sep 15, 2013
+
+@author: brad
+'''
+
+from HTMLParser import HTMLParser
+import types
+
+class BadTag(object):
+    tag = ""
+    excuses = []
+    def __init__(self, tag, excuse):
+        self.tag = tag
+        self.excuses = excuse
+        
+# create a subclass and override the handler methods
+class MyHTMLParser(HTMLParser):
+    cleanhtml = ""
+    dirtyhtml = ""
+    keep = True
+    badtag = False
+    currentBadTag = None
+    badtags = []
+    
+    def __init__(self, html, btags = []): 
+        HTMLParser.__init__(self)
+        cleanme = html
+        for b in btags:
+            self.badtags.append(b)
+            partiallycleaned = self.close_all_open_first(cleanme, "<"+b.tag+">")
+            cleanme = self.close_open_tags(partiallycleaned, "<"+b.tag+">")
+        self.dirtyhtml = cleanme
+        
+    def startParsing(self):
+        self.feed(self.dirtyhtml)
+
+    def setBadTags(self, tags): 
+        for t in tags:
+            t.tag = t.tag.lower()
+            self.badtags.append(t)
+            self.dirtyhtml = self.close_all_open_first(self.dirtyhtml, "<" + t.tag + ">")
+            self.dirtyhtml = self.close_open_tags(self.dirtyhtml, "<" + t.tag + ">")
+
+    def hasAnException(self, excuse, attrs):            
+        for e in excuse.excuses:
+            for a in attrs:
+                if e in a or e == a:
+                    return True
+        return False
+    
+    def handle_starttag(self, tag, attrs):
+        if not self.badtag and self.isKeepable(tag, attrs): # Make sure we're not still parsing bad shit...
+            cleaned = ""
+            att = ""
+            if attrs:
+                for x in attrs:
+                    if len(x) >= 2:
+                        att = "%s %s='%s'" % (att, x[0], x[1])
+            cleaned = "<%s%s>" % (tag, att)
+            self.cleanhtml = "%s %s" % (self.cleanhtml, cleaned)
+
+    def handle_endtag(self, tag):
+        if self.badtag == True:
+            # We're looking for the endtag that matches self.currentBadTag so we can start keeping again
+            if tag == self.currentBadTag:
+                self.currentBadTag = None
+                self.badtag = False
+                self.keep = True
+        else:
+            self.cleanhtml += "</%s>" % tag
+    
+    def handle_data(self, data):
+        if self.keep:
+            self.cleanhtml = "%s %s" % (self.cleanhtml, data)
+
+    def close_all_open_first(self, text, tag):
+        closedtag = "</" + tag[1:]
+        opens = self.findAllOccurances(text, tag)
+        closeds = self.findAllOccurances(text, closedtag)
+        # make sure we don't just have a couple opens
+        # if we do close them
+        if len(closeds) == 0:
+            if len(opens) > 2 and len(opens) % 2 != 0:
+                # we have an "extra" one so pop it off
+                opens = opens[:-1]
+            cleaned = text
+            for l in xrange(len(opens)):
+                if l % 2 != 0:
+                    #replace that bad boy
+                    cleaned = self.replaceNthOccurance(cleaned, tag, closedtag, l + 1)
+        return cleaned
+            
+    def close_open_tags(self, text, tag):
+        # must run thru close_all_open_first first!
+        # find first occurance
+        closedtag = "</" + tag[1:]
+        opens = self.findAllOccurances(text, tag)
+        closeds = self.findAllOccurances(text, closedtag)
+        # hopefully we don't have more than the other
+        # if we do, though, get rid of the "extra" one/s
+        cleaned = text
+        while len(opens) > len(closeds):
+            # remove the last occurance
+            cleaned = self.replaceNthOccurance(cleaned, tag, "", len(opens))
+            opens = opens[:-1]
+        while len(closeds) > len(opens):
+            cleaned = self.replaceNthOccurance(cleaned, closedtag, "", len(closeds))
+            closeds = closeds[:-1]
+        # go thru and make sure the closeds follow the opens
+        n = 1
+        for o, c in zip(opens, closeds):
+            if o > c:
+                # holy shit! we have a closed tag before an open!
+                # so flip them bitches...
+                cleaned = self.replaceNthOccurance(cleaned, tag, closedtag, n)
+                cleaned = self.replaceNthOccurance(cleaned, closedtag, tag, n)    
+                n = n + 1
+        if n > 1:
+            # we've made a swap so we better check again...
+            cleaned = self.close_open_tags(cleaned, tag)
+        return cleaned
+        
+        
+    def findAllOccurances(self, text, tag):
+        tags = []
+        start = 0
+        while text:
+            idx = text.find(tag)
+            if idx > -1:
+                tags.append(idx + start)
+                start = start + idx + len(tag)
+                text = text[idx + len(tag):]
+            else:
+                text = ""
+        return tags
+        
+
+    def isBadTag(self, tag):
+        for t in self.badtags:
+            if t.tag.lower() == tag.lower():
+                return True 
+        return False
+
+    def getTagByName(self, tag):
+        for t in self.badtags:
+            if tag.lower() == t.tag.lower():
+                return t
+    
+    def isKeepable(self, tag, attrs):
+        # determine whether we want the html
+        if self.badtag:
+            # we're already parsing within a bad tag so...
+            return False
+        else:
+            if self.isBadTag(tag) and not self.hasAnException(self.getTagByName(tag), attrs):
+                self.currentBadTag = tag
+                self.keep = False
+                self.badtag = True
+                return False
+            else:
+                return True
+            
+    def rreplace(self, str, old, new, times):
+        li = str.rsplit(old, times)
+        return new.join(li)
+    
+    def replaceNthOccurance(self, str, old, replace, occurance):
+        if occurance <= 0:
+            return str
+        li = str.split(old, occurance)
+        if len(li) < occurance + 1:
+            return str
+        replaced = old.join(li[:-1]) + replace + li[-1]
+        return replaced
+        
+    def getCleanHtml(self):
+        return self.cleanhtml
