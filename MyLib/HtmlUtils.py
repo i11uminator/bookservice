@@ -160,7 +160,7 @@ class HtmlUtils(object):
             return html
 
 
-test = True
+test = False
 
 if test:
     hu = HtmlUtils()

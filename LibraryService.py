@@ -18,7 +18,9 @@ H = HtmlUtils.HtmlUtils
 
 urls = (
            "/books", "books",
-           "/books/bookshelf/(.*)", "bookshelf",
+           "/books/(.?cwd=*)", "books",
+           "/books/bookshelf", "bookshelf",
+           "/books/bookshelf/?cwd=(.*)", "bookshelf",
            "/books/book/(.*)", "book",
            "/books/page/(.*)", "page"
         )
@@ -31,17 +33,40 @@ currentpage = 10
 class books:
     dirpath = "/home/brad/Documents/Books/Linux"
     
-    def GET(self):
+    def GET(self, dirpath=None):
+#         du = DU()
+#         libooks = du.listAllByExt(".pdf", self.dirpath)
+#         html = "<html><head><title>Your library</title><script></script></head><body>"
+#         for b in libooks:
+#             html += "<a href='books/book/?bid=%(pdf)s'>%(title)s</a><br/>" % dict(pdf=b, title=os.path.basename(b)[:-4])
+#         html += "</body></html>"
+#         return html
+
+        global rootpdfdir
+        global currentwdir
+        # make sure we have something to start with
+        winput = web.input(cwd=rootpdfdir)
+        cwd = winput.cwd
+        if os.path.isdir(cwd):
+            currentwdir = cwd
+        elif os.path.isfile(cwd):
+            currentwdir = os.path.dirname(cwd)
+        else:
+            currentwdir = rootpdfdir
         du = DU()
-        libooks = du.listAllByExt(".pdf", self.dirpath)
-        html = "<html><head><title>Your library</title><script></script></head><body>"
+        lidirs = du.listAllDirs(currentwdir)
+        libooks = du.listAllByExt(".pdf", currentwdir)
+        html = "<html><head><title>Your Library</title><script></script></head><body><table>"
+        for d in lidirs:
+            html += "<tr><td><a href='/books/?cwd=%(dirpath)s'>%(basepath)s</a></td></tr>" % dict(dirpath=d, basepath=d)
         for b in libooks:
-            html += "<a href='books/book/?bid=%(pdf)s'>%(title)s</a><br/>" % dict(pdf=b, title=os.path.basename(b)[:-4])
-        html += "</body></html>"
+            html += "<tr><td><a href='/books/book/?bid=%(pdf)s'>%(title)s</a></td></tr>" % dict(pdf=b, title=os.path.basename(b)[:-4])
+        html += "</table></body></html>"
         return html
 
 class bookshelf:
-    def Get(self, dirpath):
+
+    def Get(self, dirpath = None):
         global rootpdfdir
         global currentwdir
         # make sure we have something to start with
@@ -63,8 +88,7 @@ class bookshelf:
         for b in libooks:
             html += "<tr><td><a href='/books/book/?bid=%(pdf)s'>%(title)s</a></td></tr>" % dict(pdf=b, title=os.path.basename(b)[:-4])
         html += "</table></body></html>"
-        
-            
+        return html
     
 class book:
 

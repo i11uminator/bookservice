@@ -21,7 +21,7 @@ class DirUtils(object):
             path = os.getcwd()
         lidir = []
         for p in os.listdir(path):
-            if os.path.isdir(p):
+            if os.path.isdir(self.fullName(path, p)):
                 lidir.append(self.fullName(path, p))
         return lidir
     
