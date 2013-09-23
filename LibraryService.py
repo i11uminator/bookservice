@@ -18,11 +18,12 @@ H = HtmlUtils.HtmlUtils
 
 urls = (
            "/books", "books",
-           "/books/bookshelf", "bookshelf",
+           "/books/bookshelf/(.*)", "bookshelf",
            "/books/book/(.*)", "book",
            "/books/page/(.*)", "page"
         )
 
+rootpdfdir  = "/home/brad/Documents/Books"
 currentwdir = "/home/brad/Documents/Books"
 currentbook = None
 currentpage = 10
@@ -41,7 +42,29 @@ class books:
 
 class bookshelf:
     def Get(self, dirpath):
+        global rootpdfdir
         global currentwdir
+        # make sure we have something to start with
+        winput = web.input(cwd=rootpdfdir)
+        cwd = winput.cwd
+        if os.path.isdir(cwd):
+            currentwdir = cwd
+        elif os.path.isfile(cwd):
+            currentwdir = os.path.dirname(cwd)
+        else:
+            currentwdir = rootpdfdir
+        # Now we know that we have a valid directory so we can grab all the books and subdirectories
+        du = DU()
+        lidirs = du.listAllDirs(currentwdir)
+        libooks = du.listAllByExt(".pdf", currentwdir)
+        html = "<html><head><title>Your Library</title><script></script></head><body><table>"
+        for d in lidirs:
+            html += "<tr><td><a href='/books/bookshelf/?cwd=%(dirpath)s'>%(basepath)s</a></td></tr>" % dict(dirpath=currentwdir, basepath=os.path.basename(currentwdir))
+        for b in libooks:
+            html += "<tr><td><a href='/books/book/?bid=%(pdf)s'>%(title)s</a></td></tr>" % dict(pdf=b, title=os.path.basename(b)[:-4])
+        html += "</table></body></html>"
+        
+            
     
 class book:
 
