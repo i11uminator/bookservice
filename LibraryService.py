@@ -18,9 +18,7 @@ H = HtmlUtils.HtmlUtils
 
 urls = (
            "/books", "books",
-           "/books/(.?cwd=*)", "books",
-           "/books/bookshelf", "bookshelf",
-           "/books/bookshelf/?cwd=(.*)", "bookshelf",
+           "/books/bookshelf/(.*)", "bookshelf",
            "/books/book/(.*)", "book",
            "/books/page/(.*)", "page"
         )
@@ -34,14 +32,6 @@ class books:
     dirpath = "/home/brad/Documents/Books/Linux"
     
     def GET(self, dirpath=None):
-#         du = DU()
-#         libooks = du.listAllByExt(".pdf", self.dirpath)
-#         html = "<html><head><title>Your library</title><script></script></head><body>"
-#         for b in libooks:
-#             html += "<a href='books/book/?bid=%(pdf)s'>%(title)s</a><br/>" % dict(pdf=b, title=os.path.basename(b)[:-4])
-#         html += "</body></html>"
-#         return html
-
         global rootpdfdir
         global currentwdir
         # make sure we have something to start with
@@ -58,7 +48,7 @@ class books:
         libooks = du.listAllByExt(".pdf", currentwdir)
         html = "<html><head><title>Your Library</title><script></script></head><body><table>"
         for d in lidirs:
-            html += "<tr><td><a href='/books/?cwd=%(dirpath)s'>%(basepath)s</a></td></tr>" % dict(dirpath=d, basepath=d)
+            html += "<tr><td><a href='/books/bookshelf/?cwd=%(dirpath)s'>%(basepath)s</a></td></tr>" % dict(dirpath=d, basepath=d)
         for b in libooks:
             html += "<tr><td><a href='/books/book/?bid=%(pdf)s'>%(title)s</a></td></tr>" % dict(pdf=b, title=os.path.basename(b)[:-4])
         html += "</table></body></html>"
@@ -66,7 +56,7 @@ class books:
 
 class bookshelf:
 
-    def Get(self, dirpath = None):
+    def GET(self, dirpath):
         global rootpdfdir
         global currentwdir
         # make sure we have something to start with
@@ -84,7 +74,7 @@ class bookshelf:
         libooks = du.listAllByExt(".pdf", currentwdir)
         html = "<html><head><title>Your Library</title><script></script></head><body><table>"
         for d in lidirs:
-            html += "<tr><td><a href='/books/bookshelf/?cwd=%(dirpath)s'>%(basepath)s</a></td></tr>" % dict(dirpath=currentwdir, basepath=os.path.basename(currentwdir))
+            html += "<tr><td><a href='/books/bookshelf/?cwd=%(dirpath)s'>%(basepath)s</a></td></tr>" % dict(dirpath=d, basepath=d)
         for b in libooks:
             html += "<tr><td><a href='/books/book/?bid=%(pdf)s'>%(title)s</a></td></tr>" % dict(pdf=b, title=os.path.basename(b)[:-4])
         html += "</table></body></html>"
