@@ -44,4 +44,7 @@ class DirUtils(object):
         return lidir
     
     def fullName(self, dir, name):
-        return str("%(dirname)s/%(basename)s" % dict(dirname=dir, basename=name))
+        if os.name == "nt":
+            return str("%(dirname)s\\%(basename)s" % dict(dirname=dir, basename=name))
+        else:
+            return str("%(dirname)s/%(basename)s" % dict(dirname=dir, basename=name))
