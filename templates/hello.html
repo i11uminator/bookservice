@@ -1,0 +1,32 @@
+$def with (title, banner, content, footer)
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>$title</title>
+    <script></script>
+    <link rel="stylesheet" href="css/style.css?v=1.0" type="text/css" />
+</head>
+    <body id="banner" class="body">
+	<header id="index" class="home">
+	    <h1><a href"#">$banner</a></h1>
+	    <nav>
+		<ul>
+		    <li class="active"><a href="#">home</a></li>
+		    <li><a href="#">contents</a></li>
+		    <li><a href="#">index</a></li>
+		</ul> 
+	    </nav>
+	</header>
+	<section id="content" class="body">
+	    $content
+	</section>
+	<footer id="contentinfo" class="body">
+	    <nav>
+		<ul>
+		    $footer
+		</ul> 
+	    </nav>
+	</footer>
+    </body>
+</html>

@@ -46,12 +46,14 @@ class books:
         du = DU()
         lidirs = du.listAllDirs(currentwdir)
         libooks = du.listAllByExt(".pdf", currentwdir)
-        html = "<html><head><title>Your Library</title><script></script></head><body><table>"
+        links = []
         for d in lidirs:
-            html += "<tr><td><a href='/books/bookshelf/?cwd=%(dirpath)s'>%(basepath)s</a></td></tr>" % dict(dirpath=d, basepath=d)
+            links.append(("/books/bookshelf/?cwd=" + d, d))
         for b in libooks:
-            html += "<tr><td><a href='/books/book/?bid=%(pdf)s'>%(title)s</a></td></tr>" % dict(pdf=b, title=os.path.basename(b)[:-4])
-        html += "</table></body></html>"
+            links.append(("/books/book/?bid=" + b, os.path.basename(b[:-4])))
+        
+        render = web.template.render("templates")
+        html = render.main("Your Library", "Your Library", links)
         return html
 
 class bookshelf:
@@ -72,13 +74,16 @@ class bookshelf:
         du = DU()
         lidirs = du.listAllDirs(currentwdir)
         libooks = du.listAllByExt(".pdf", currentwdir)
-        html = "<html><head><title>Your Library</title><script></script></head><body><table>"
+        links = []
         for d in lidirs:
-            html += "<tr><td><a href='/books/bookshelf/?cwd=%(dirpath)s'>%(basepath)s</a></td></tr>" % dict(dirpath=d, basepath=d)
+            links.append(("/books/bookshelf/?cwd=" + d, d))
         for b in libooks:
-            html += "<tr><td><a href='/books/book/?bid=%(pdf)s'>%(title)s</a></td></tr>" % dict(pdf=b, title=os.path.basename(b)[:-4])
-        html += "</table></body></html>"
+            links.append(("/books/book/?bid=" + b, os.path.basename(b[:-4])))
+        
+        render = web.template.render("templates")
+        html = render.bookshelf("Your Library", "Your Library", links)
         return html
+
     
 class book:
 
@@ -88,10 +93,10 @@ class book:
         winput = web.input()
         currentpage = 10
         currentbook = B(winput.bid, currentpage)
-        html = currentbook.getPage()
-        footer = "<p><a href='../page/?pge=9'>Previous</a></p><p><a href='../page/?pge=11'>Next</a></p>"
-        h = H()
-        html = h.addFooter(html, footer)
+        text = currentbook.getPageBody()
+        footer = [("../page/?pge=%(prv)d" % dict(prv=int(currentpage) - 1), "Previous"), ("../page/?pge=%(nxt)d" % dict(nxt=int(currentpage) + 1), "Next")]
+        render = web.template.render("templates")
+        html = render.page("Your Library", currentbook.title, text, footer)
         return html
     
 class page:
@@ -101,10 +106,10 @@ class page:
         global currentpage
         winput = web.input()
         currentpage = winput.pge
-        html = currentbook.getPage(currentpage)
-        footer = "<p><a href='../page/?pge=%(prv)d'>Previous</a></p><p><a href='../page/?pge=%(nxt)d'>Next</a></p>" % dict(prv=int(currentpage) - 1, nxt=int(currentpage) + 1)
-        h = H()
-        html = h.addFooter(html, footer)
+        text = currentbook.getPageBody(currentpage)
+        footer = [("../page/?pge=%(prv)d" % dict(prv=int(currentpage) - 1), "Previous"), ("../page/?pge=%(nxt)d" % dict(nxt=int(currentpage) + 1), "Next")]
+        render = web.template.render("templates")
+        html = render.page("Your Library", currentbook.title, text, footer)
         return html
 
 

@@ -1,0 +1,32 @@
+$def with (title, banner, content)
+
+$def booklinks(links):
+    $for b in links:
+	<li><a class="booklist" href="$:b[0]">$:b[1]</a></li>
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>$title</title>
+    <script></script>
+    <link rel="stylesheet" href="static/css/style.css" type="text/css" />
+</head>
+    <body id="banner" class="body">
+	<header id="index" class="home">
+	    <h1><a href"#">$banner</a></h1>
+	    <nav>
+		<ul>
+		    <li class="active"><a href="/books">home</a></li>
+		    <li><a href="#">contents</a></li>
+		    <li><a href="#">index</a></li>
+		</ul> 
+	    </nav>
+	</header>
+	<section id="content" class="body">
+		<ul class="booklist">
+		    $:booklinks(content)
+		</ul>
+	</section>
+    </body>
+</html>

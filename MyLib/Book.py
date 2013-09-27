@@ -30,6 +30,15 @@ class Book(object):
         page = self.fixLinks(page)
         return page
     
+    def getPageBody(self, page = None):
+        if page == None:
+            page = (self.currentpage, 10)[self.currentpage == None]
+        PH = PdfToHtml.PdfHtml
+        mph = PH(self.filepath)
+        page = mph.GetHtmlPageBody(page)
+        page = self.fixLinks(page)
+        return page
+    
     def fixLinks(self, page):
         su = StringUtils.StringUtils()
         lnk = self.title[:-(len(".pdf"))] + ".html#"
