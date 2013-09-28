@@ -25,8 +25,8 @@ urls = (
            "/books/page/(.*)", "page"
         )
 
-rootpdfdir  = "/home/brad/Documents/Books"
-currentwdir = "/home/brad/Documents/Books"
+rootpdfdir  = ("/home/brad/Documents/Books", "/c/Users/bkline/Desktop/CleanDesktop/BKlineSystem/Books")[os.name == "nt"]
+currentwdir = ("/home/brad/Documents/Books", "/c/Users/bkline/Desktop/CleanDesktop/BKlineSystem/Books")[os.name == "nt"]
 currentbook = None
 currentpage = 10
 openedbooks = {}
