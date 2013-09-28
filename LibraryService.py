@@ -10,11 +10,13 @@ from MyLib import DirUtils
 from MyLib import WebServer
 from MyLib import Book
 from MyLib import HtmlUtils
+from MyLib import PdfUtils
 
 DU = DirUtils.DirUtils
 WS = WebServer.wserver
 B  = Book.Book
 H = HtmlUtils.HtmlUtils
+PB = PdfUtils.PdfBox
 
 urls = (
            "/books", "books",
@@ -27,6 +29,7 @@ rootpdfdir  = "/home/brad/Documents/Books"
 currentwdir = "/home/brad/Documents/Books"
 currentbook = None
 currentpage = 10
+openedbooks = {}
 
 class books:
     dirpath = "/home/brad/Documents/Books/Linux"
@@ -90,10 +93,17 @@ class book:
     def GET(self, bk):
         global currentbook
         global currentpage
+        global openedbooks
         winput = web.input()
         currentpage = 10
-        currentbook = B(winput.bid, currentpage)
-        text = currentbook.getPageBody()
+        abook = None
+        if not openedbooks.has_key(winput.bid):
+            abook = PB(winput.bid)
+            openedbooks[winput.bid] = abook
+        else:
+            abook = openedbooks[winput.bid]
+        currentbook = abook
+        text = currentbook.getPage(currentpage)
         footer = [("../page/?pge=%(prv)d" % dict(prv=int(currentpage) - 1), "Previous"), ("../page/?pge=%(nxt)d" % dict(nxt=int(currentpage) + 1), "Next")]
         render = web.template.render("templates")
         html = render.page("Your Library", currentbook.title, text, footer)
@@ -105,8 +115,8 @@ class page:
         global currentbook
         global currentpage
         winput = web.input()
-        currentpage = winput.pge
-        text = currentbook.getPageBody(currentpage)
+        currentpage = int(winput.pge)
+        text = currentbook.getPage(currentpage)
         footer = [("../page/?pge=%(prv)d" % dict(prv=int(currentpage) - 1), "Previous"), ("../page/?pge=%(nxt)d" % dict(nxt=int(currentpage) + 1), "Next")]
         render = web.template.render("templates")
         html = render.page("Your Library", currentbook.title, text, footer)
