@@ -106,7 +106,8 @@ class book:
         text = currentbook.getPage(currentpage)
         footer = [("../page/?pge=%(prv)d" % dict(prv=int(currentpage) - 1), "Previous"), ("../page/?pge=%(nxt)d" % dict(nxt=int(currentpage) + 1), "Next")]
         render = web.template.render("templates")
-        html = render.page("Your Library", currentbook.title, text, footer)
+        opts = range(0, currentbook.pages, 10)
+        html = render.page("Your Library", abook, text, opts, footer)
         return html
     
 class page:
@@ -119,7 +120,8 @@ class page:
         text = currentbook.getPage(currentpage)
         footer = [("../page/?pge=%(prv)d" % dict(prv=int(currentpage) - 1), "Previous"), ("../page/?pge=%(nxt)d" % dict(nxt=int(currentpage) + 1), "Next")]
         render = web.template.render("templates")
-        html = render.page("Your Library", currentbook.title, text, footer)
+        opts = range(0, currentbook.pages, 10)
+        html = render.page("Your Library", currentbook, text, opts, footer)
         return html
 
 

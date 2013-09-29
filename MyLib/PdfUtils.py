@@ -10,6 +10,7 @@ class PdfBox(object):
     ''' Wraps pyPdf utils into a pdf object'''
     pdfReader = None
     pdfInfo = None
+    currentpage = 0
     extractedPages = {}
     filepath = ""
     isencrypted = False
@@ -45,6 +46,7 @@ class PdfBox(object):
         return False
     
     def getPage(self, pagenum):
+        self.currentpage = pagenum
         if self.extractedPages.has_key(pagenum):
             return self.extractedPages[pagenum]
         else:

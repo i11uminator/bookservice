@@ -1,8 +1,24 @@
-$def with (title, banner, text, footer)
+$def with (title, bookinfo, text, opts, footer)
 
 $def booklinks(links):
     $for b in links:
 	<li><a class="booklist" href="$:b[0]">$:b[1]</a></li>
+
+$def dropdown(options, cpage):
+    <form action="/books/page/" method="get">
+    <select name="pge" id="pge" onchange="this.form.submit()">
+    $for o in options:
+	$if cpage >= o:
+	    $if cpage == o:
+		<option SELECTED value="$:o">$:o</option>
+	    $elif o + 10 > cpage:
+		<option SELECTED value="$:cpage">$:cpage</option>
+	    $else:
+		<option value="$:o">$:o</option>
+	$else:
+	    <option value="$:o">$:o</option>
+    </select>
+    </form>
 
 <!doctype html>
 <html lang="en">
@@ -14,7 +30,8 @@ $def booklinks(links):
 </head>
     <body id="banner" class="body">
 	<header id="index" class="home">
-	    <h1><a href"#">$banner</a></h1>
+	    <h1><a href"#">$:bookinfo.title</a></h1>
+	    <h2><a href"#">$:bookinfo.subject</a></h2>
 	    <nav>
 		<ul>
 		    <li class="active"><a href="/books">home</a></li>
@@ -30,6 +47,7 @@ $def booklinks(links):
 	    <nav>
 		<ul>
 		    $:booklinks(footer)
+		    $:dropdown(opts, bookinfo.currentpage)
 		</ul> 
 	    </nav>
 	</footer>
