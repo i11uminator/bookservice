@@ -5,6 +5,7 @@ Created on Sep 27, 2013
 '''
 
 from pyPdf import PdfFileReader
+from pdfminer import pdfparser
 
 class PdfBox(object):
     ''' Wraps pyPdf utils into a pdf object'''
@@ -55,6 +56,22 @@ class PdfBox(object):
             self.extractedPages[pagenum] = text
             return text
 
+class MyPdfMiner(object):
+    ''' Wraps pdfMiner utils into a pdf object'''
+    pdfReader = None
+    pdfInfo = None
+    currentpage = 0
+    extractedPages = {}
+    filepath = ""
+    isencrypted = False
+    password = ""
+    author = ""
+    title = ""
+    subject = ""
+    pages = 0
+    initialized = False
+    
+    
 Test = False
 if Test:
     pdfpath = "/home/brad/Documents/Books/Linux/Linux-101-Hacks.pdf"
